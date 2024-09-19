@@ -19,9 +19,12 @@ class Login(tk.Tk):
         self.login_screen()
 
     def login_screen(self):
+        for widget in self.winfo_children():
+            widget.destroy()
+
         self.geometry("500x600")
         self.title("Login na Biblioteca")
-
+        
         frame_login = tk.Frame(self, width=400, height=300)
         frame_login.pack(anchor="center")
         frame_login.propagate(False)
@@ -29,11 +32,11 @@ class Login(tk.Tk):
         tk.Label(frame_login, text="Login",font=("Arial", 40, "bold")).pack(pady=30)
 
         tk.Label(frame_login, text="Nome", font=("Arial", 17)).pack(anchor="w", pady=15)
-        self.txb_nome = tk.Entry(frame_login, width=60)
+        self.txb_nome = tk.Entry(frame_login, width=66)
         self.txb_nome.pack(anchor="w")
 
         tk.Label(frame_login, text="Senha", font=("Arial", 17)).pack(anchor="w", pady=15)
-        self.txb_senha = tk.Entry(frame_login, width=60)
+        self.txb_senha = tk.Entry(frame_login, width=66)
         self.txb_senha.pack(anchor="w")
 
         frame_buttom = tk.Frame(self)
@@ -65,26 +68,26 @@ class Login(tk.Tk):
         tk.Label(frame_login, text="Cadastro",font=("Arial", 40, "bold")).pack(pady=30)
 
         tk.Label(frame_login, text="Nome", font=("Arial", 14)).pack(anchor="w", pady=15)
-        self.txb_nomecadastro = tk.Entry(frame_login, width=60)
+        self.txb_nomecadastro = tk.Entry(frame_login, width=66)
         self.txb_nomecadastro.pack(anchor="w")
 
         tk.Label(frame_login, text="Email", font=("Arial", 14)).pack(anchor="w", pady=15)
-        self.txb_email = tk.Entry(frame_login, width=60)
+        self.txb_email = tk.Entry(frame_login, width=66)
         self.txb_email.pack(anchor="w")
 
         tk.Label(frame_login, text="Senha", font=("Arial", 14)).pack(anchor="w", pady=15)
-        self.txb_senhacadastro = tk.Entry(frame_login, width=60)
+        self.txb_senhacadastro = tk.Entry(frame_login, width=66)
         self.txb_senhacadastro.pack(anchor="w")
 
         tk.Label(frame_login, text="Confirmar Senha", font=("Arial", 14)).pack(anchor="w", pady=15)
-        self.txb_confirmcadastro = tk.Entry(frame_login, width=60)
+        self.txb_confirmcadastro = tk.Entry(frame_login, width=66)
         self.txb_confirmcadastro.pack(anchor="w")
 
         frame_buttom = tk.Frame(self)
         frame_buttom.pack(pady=30)
         cadastrar = tk.Button(frame_buttom, text="Entrar", font=("Arial", 10, "bold"), width=15, command=self.cadastrar)
         cadastrar.pack(pady= 10)
-        cancelar = tk.Button(frame_buttom, text="Cancelar", font=("Arial", 10, "bold"), width=15, command=lambda:self.sair(self))
+        cancelar = tk.Button(frame_buttom, text="Cancelar", font=("Arial", 10, "bold"), width=15, command=self.login_screen)
         cancelar.pack()
 
     def cadastrar(self):
