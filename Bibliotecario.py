@@ -13,16 +13,27 @@ conexao = mysql.connector.connect(
         )
 cursor = conexao.cursor()
 
-def add_sql( valor, selecionar,tabela, coluna):
-        comando_selecionar = "SELECT "+ selecionar+  " FROM " + tabela + " where " + coluna + "= %s"
+def add_sql(valor, selecionar,tabela, coluna):
+        comando_selecionar = "SELECT "+ selecionar +  " FROM " + tabela + " where " + coluna + "= %s"
         cursor.execute(comando_selecionar, (valor,))
         resultado = cursor.fetchone()
-        if resultado:
-            print("XD DEBUG")
+        if resultado != None:
+            for i in resultado:
+                id_selecionado = i
+                break
+            return id_selecionado
         else:
             comando_adicionar = "INSERT INTO `biblioteca itinerante`."+ f"`{tabela}`" + f"({coluna})" +" VALUES (%s);"
             cursor.execute(comando_adicionar, (valor,))
             conexao.commit()
+            cursor.execute(comando_selecionar, (valor,))
+            resultado = cursor.fetchone()
+            
+            for i in resultado:
+                id_selecionado = i 
+                break
+            return id_selecionado
+            
 
 class Janela_Bibliotecario(tk.Tk):
     def __init__(self, *args):
@@ -107,22 +118,26 @@ class Janela_Bibliotecario(tk.Tk):
         self.entry_IdiomaL = tk.Entry(frame_addP, width=50, )
         self.entry_IdiomaL.pack(pady=10, anchor="w")
 
-        bt_salvar = tk.Button(frame_addP, width=15, text="Salvar Produto",command=self.adicionar_livro, bg="#2ecc71")
+        bt_salvar = tk.Button(frame_addP, width=15, text="Salvar Produto",command=lambda:self.adicionar_livro(root), bg="#2ecc71")
         bt_salvar.pack(side="top", pady=10)
 
         bt_cancelar = tk.Button(frame_addP, width=15, text="Cancelar", bg="#e74c3c",command=lambda:self.off_windowns(root))
         bt_cancelar.pack(side="bottom")
     
-    def adicionar_livro(self):
+    def adicionar_livro(self, root):
         titulo = self.entry_nomeL.get()
         genero = self.entry_generoL.get()
         autor = self.entry_autorL.get()
         idioma = self.entry_IdiomaL.get()
 
-        add_sql(genero,"id_categoria", "fato_categoria", "categoria")
-        add_sql(autor, "id_autor", "fato_autor", "autor")
-        add_sql(idioma, "id_idioma", "fato_idioma", "idioma")
+        genero_fi = add_sql(genero,"id_categoria", "fato_categoria", "categoria")
+        autor_fi = add_sql(autor, "id_autor", "fato_autor", "autor")
+        idioma_fi = add_sql(idioma, "id_idioma", "fato_idioma", "idioma")
+
     
+        cursor.execute("INSERT INTO dim_biblioteca (título, autor, categoria, idioma) Values (%s, %s, %s, %s)", (titulo, autor_fi, genero_fi, idioma_fi))
+        conexao.commit()
+        self.off_windowns(root)
     
     def off_windowns(self, root):
         root.destroy()
