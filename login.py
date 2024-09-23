@@ -3,19 +3,24 @@ import pymysql
 import mysql.connector
 from tkinter import messagebox
 import datetime
+from Bibliotecario import Janela_Bibliotecario as bibliotecario
+from Bibliotecario import add_sql
 
- 
 
-class Login(tk.Tk):
-    def __init__(self, *args):
-        super().__init__(*args)
-        self.conexao = mysql.connector.connect(
+conexao = mysql.connector.connect(
             host= "localhost",
             user="root", 
             password="acesso123",
             database="biblioteca itinerante"
         )
-        self.cursor = self.conexao.cursor()
+cursor = conexao.cursor()
+
+
+class Login(tk.Tk):
+    def __init__(self, *args):
+        super().__init__(*args)
+        
+       
         self.login_screen()
 
     def login_screen(self):
@@ -113,9 +118,10 @@ class Login(tk.Tk):
         senha_confirm= self.txb_confirmcadastro.get()
 
         if genero != None:
-            self.add_sql(genero, "fato_genero", "genero")
+            add_sql(genero, "fato_genero", "genero")
             messagebox.showinfo("Login Cadastrado", f"Gênero = {genero}")
-            self.cursor.execute("INSERT INTO `teste` (teste) VALUES `fato_genero`.id_genero where genero = 'Masculino'")
+            cursor.execute("INSERT INTO `teste` (teste) VALUES `fato_genero`.id_genero where genero = 'Masculino'")
+            conexao.commit()
             self.login_screen()
             
 
@@ -136,16 +142,7 @@ class Login(tk.Tk):
         else:
             return None
     
-    def add_sql(self, valor, tabela, coluna):
-        comando_selecionar = "SELECT id_genero FROM " + tabela + " where " + coluna + "= %s"
-        self.cursor.execute(comando_selecionar, (valor,))
-        resultado = self.cursor.fetchone()
-        if resultado:
-            pass
-        else:
-            comando_adicionar = "INSERT INTO `biblioteca itinerante`."+ f"`{tabela}`" + f"({coluna})" +" VALUES (%s);"
-            self.cursor.execute(comando_adicionar, (valor,))
-            self.conexao.commit()
+    
     
     def adds_sql(self, valores, tabela, colunas):
         pass
