@@ -206,9 +206,19 @@ class Janela_Bibliotecario(tk.Tk):
     def editar (self):
         id_edit = self.combo_idL.get()
         topico = self.combo_idL.get()
-        valor = self.entry_edit.get() #Colocar um if para cada tabela e coluna 
-        cursor.execute("Update dim_biblioteca Set "f"{topico} = {valor} Where id_livro" + " =%s", (id_edit))
-    
+        valor_edit = self.entry_edit.get()
+        if topico == "Nome":
+            valor = valor_edit
+        elif topico == "Gênero":
+            coluna = "genero"
+            selecionar = "id_genero"
+            tabela = "fato_genero"
+            valor = add_sql(valor_edit, selecionar, tabela, coluna)
+        
+        try:
+            cursor.execute("Update dim_biblioteca Set "f"{topico} = {valor} Where id_livro" + " = %s", (id_edit))
+        except:
+            messagebox.showerror("ERRO", "Verifique se existe o tópico")
 
 
 if __name__ == "__main__": 
