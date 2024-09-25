@@ -165,9 +165,16 @@ class Janela_Bibliotecario(tk.Tk):
         self.combo_topicoL = ttk.Combobox(frame_edL, width=50, values=lista_edi)
         self.combo_topicoL.pack(pady=10, anchor="w")
 
-
+        tk.Label(frame_edL, text="Novo Valor:", font=("Arial", 12)).pack( anchor="w")
+        self.entry_edit = tk.Entry(frame_edL, width=50)
+        self.entry_edit.pack(pady=10, anchor="w")
         
-    
+        bt_salvar_edit = tk.Button(frame_edL, width=15, text="Salvar Edição",command=lambda:self.editar(root), bg="#2ecc71")
+        bt_salvar_edit.pack(side="top", pady=10)
+
+        bt_cancelar = tk.Button(frame_edL, width=15, text="Cancelar", bg="#e74c3c",command=lambda:self.off_windowns(root))
+        bt_cancelar.pack(side="bottom")
+        
     def adicionar_livro(self, root):
         titulo = self.entry_nomeL.get()
         genero = self.entry_generoL.get()
@@ -203,22 +210,33 @@ class Janela_Bibliotecario(tk.Tk):
             else:
                 self.tree_menu.insert("", "end", values=(i[0], i[1], genero, autor, idioma, i[5], status), tags=("all", "indis",))
 
-    def editar (self):
+    def editar (self, root):
         id_edit = self.combo_idL.get()
-        topico = self.combo_idL.get()
+        topico = self.combo_topicoL.get()
         valor_edit = self.entry_edit.get()
         if topico == "Nome":
+            topico = "Título"
             valor = valor_edit
         elif topico == "Gênero":
-            coluna = "genero"
-            selecionar = "id_genero"
-            tabela = "fato_genero"
+            
+            coluna = "categoria"
+            selecionar = "id_categoria"
+            tabela = "fato_categoria"
+            valor = add_sql(valor_edit, selecionar, tabela, coluna)
+        elif topico == "Autor":
+            
+            coluna = "autor"
+            selecionar = 'id_autor'
+            tabela = "fato_autor" 
             valor = add_sql(valor_edit, selecionar, tabela, coluna)
         
-        try:
-            cursor.execute("Update dim_biblioteca Set "f"{topico} = {valor} Where id_livro" + " = %s", (id_edit))
-        except:
-            messagebox.showerror("ERRO", "Verifique se existe o tópico")
+        # try:
+        comando = ("Update dim_biblioteca Set"+ f" {topico} " + "=" + f" '{valor}' "+" Where id_livro " + " = %s")
+        cursor.execute(comando, (id_edit, ))
+        conexao.commit()
+        self.off_windowns(root)
+        # except:
+        #     messagebox.showerror("ERRO", "Verifique se existe o tópico ou ID")
 
 
 if __name__ == "__main__": 
