@@ -14,26 +14,31 @@ conexao = mysql.connector.connect(
 cursor = conexao.cursor()
 
 def add_sql(valor, selecionar,tabela, coluna):
-        comando_selecionar = "SELECT "+ selecionar +  " FROM " + tabela + " where " + coluna + "= %s"
+        comando_selecionar = f"SELECT {selecionar} FROM {tabela} WHERE {coluna} = %s"
         cursor.execute(comando_selecionar, (valor,))
         resultado = cursor.fetchone()
         if resultado != None:
-            for i in resultado:
-                id_selecionado = i
-                break
-            return id_selecionado
+            id_selecionado = resultado[0]
         else:
-            comando_adicionar = "INSERT INTO `biblioteca itinerante`."+ f"`{tabela}`" + f"({coluna})" +" VALUES (%s);"
+            comando_adicionar = f"INSERT INTO {tabela} ({coluna}) VALUES (%s);"
             cursor.execute(comando_adicionar, (valor,))
             conexao.commit()
-            cursor.execute(comando_selecionar, (valor,))
+            comando_selecionar2 = f"SELECT {selecionar} FROM {tabela} WHERE {coluna} = %s"
+            cursor.execute(comando_selecionar2, (valor,))
             resultado = cursor.fetchone()
             
-            for i in resultado:
-                id_selecionado = i 
-                break
-            return id_selecionado
-            
+            id_selecionado = resultado[0]
+        return id_selecionado
+
+def select(valor, selecionar, tabela, coluna):
+    comando = f"SELECT {selecionar} FROM {tabela} WHERE {coluna} = %s"
+    cursor.execute(comando, (valor, ))
+    resultado = cursor.fetchone()
+    if resultado:
+        id_selecionado = resultado[0]
+    else:
+        id_selecionado = "Deu ERRO"
+    return id_selecionado            
 
 class Janela_Bibliotecario(tk.Tk):
     def __init__(self, *args):
@@ -182,7 +187,7 @@ class Janela_Bibliotecario(tk.Tk):
         idioma = self.entry_IdiomaL.get()
         status = self.entry_StatusL.get()
 
-        genero_fi = add_sql(genero,"id_categoria", "fato_categoria", "categoria")
+        genero_fi = add_sql(genero,"id_generolivro", "fato_generolivro", "generolivro")
         autor_fi = add_sql(autor, "id_autor", "fato_autor", "autor")
         idioma_fi = add_sql(idioma, "id_idioma", "fato_idioma", "idioma")
 
@@ -201,10 +206,10 @@ class Janela_Bibliotecario(tk.Tk):
     def iniciar_tabela(self, comando):
         comando
         for i in cursor.fetchall():
-            genero = add_sql(i[2], "categoria", "fato_categoria", "id_categoria")
-            autor = add_sql(i[3], "autor", "fato_autor", "id_autor")
-            idioma = add_sql(i[4], "idioma", "fato_idioma", "id_idioma")
-            status = add_sql(i[6], "status", "fato_status", "id_status")
+            genero = select(i[2], "generolivro", "fato_generolivro", "id_generolivro")
+            autor = select(i[3], "autor", "fato_autor", "id_autor")
+            idioma = select(i[4], "idioma", "fato_idioma", "id_idioma")
+            status = select(i[6], "status", "fato_status", "id_status")
             if status == "Disponível":
                 self.tree_menu.insert("", "end", values=(i[0], i[1], genero, autor, idioma, i[5], status), tags=("all", "dis",))
             else:
@@ -219,9 +224,9 @@ class Janela_Bibliotecario(tk.Tk):
             valor = valor_edit
         elif topico == "Gênero":
             
-            coluna = "categoria"
-            selecionar = "id_categoria"
-            tabela = "fato_categoria"
+            coluna = "generolivro"
+            selecionar = "id_generolivro"
+            tabela = "fato_generolivro"
             valor = add_sql(valor_edit, selecionar, tabela, coluna)
         elif topico == "Autor":
             
