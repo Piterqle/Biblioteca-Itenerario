@@ -38,7 +38,15 @@ def select(valor, selecionar, tabela, coluna):
         id_selecionado = resultado[0]
     else:
         id_selecionado = "Deu ERRO"
-    return id_selecionado            
+    return id_selecionado     
+
+def delete(tree,tabela, coluna, indicie):
+    item_selecionado = tree.selection()
+    if item_selecionado:
+        valor = tree.item(item_selecionado, "values")[indicie]
+        comando = f"DELETE FROM {tabela} WHERE {coluna} = '%s'"
+        cursor.execute(comando, (valor, ))
+     
 
 class Janela_Bibliotecario(tk.Tk):
     def __init__(self, *args):
@@ -56,6 +64,9 @@ class Janela_Bibliotecario(tk.Tk):
         frame_dash = tk.Frame(self, width=227 , height=1080, bg="Black") #Frame Dashboard
         frame_dash.pack(anchor="w",side="left")
         frame_dash.propagate(False)
+
+        self.buttom_delete = tk.Button(frame_dash, text="Deletar", command=lambda:delete(self.tree_menu, "dim_biblioteca", "id_livro", 1),bg="White", width=20, font=("Arial", 10))
+        self.buttom_delete.pack(anchor="center", pady=10)
         
         frame_pesquisa = tk.Frame(frame_dash, bg="Black")
         frame_pesquisa.pack(anchor="center", pady=20)
@@ -206,10 +217,10 @@ class Janela_Bibliotecario(tk.Tk):
     def iniciar_tabela(self, comando):
         comando
         for i in cursor.fetchall():
-            genero = select(i[2], "generolivro", "fato_generolivro", "id_generolivro")
-            autor = select(i[3], "autor", "fato_autor", "id_autor")
-            idioma = select(i[4], "idioma", "fato_idioma", "id_idioma")
-            status = select(i[6], "status", "fato_status", "id_status")
+            genero = add_sql(i[3], "generolivro", "fato_generolivro", "id_generolivro")
+            autor = add_sql(i[2], "autor", "fato_autor", "id_autor")
+            idioma = add_sql(i[4], "idioma", "fato_idioma", "id_idioma")
+            status = add_sql(i[6], "status", "fato_status", "id_status")
             if status == "Disponível":
                 self.tree_menu.insert("", "end", values=(i[0], i[1], genero, autor, idioma, i[5], status), tags=("all", "dis",))
             else:
@@ -227,7 +238,7 @@ class Janela_Bibliotecario(tk.Tk):
             coluna = "generolivro"
             selecionar = "id_generolivro"
             tabela = "fato_generolivro"
-            valor = add_sql(valor_edit, selecionar, tabela, coluna)
+            valor = (valor_edit, selecionar, tabela, coluna)
         elif topico == "Autor":
             
             coluna = "autor"
@@ -236,13 +247,15 @@ class Janela_Bibliotecario(tk.Tk):
             valor = add_sql(valor_edit, selecionar, tabela, coluna)
         
         # try:
-        comando = ("Update dim_biblioteca Set"+ f" {topico} " + "=" + f" '{valor}' "+" Where id_livro " + " = %s")
+        comando = (f"UPDATE dim_biblioteca SET {topico} = '{valor}' WHERE id_livro = (%s)")
         cursor.execute(comando, (id_edit, ))
         conexao.commit()
         self.off_windowns(root)
         # except:
         #     messagebox.showerror("ERRO", "Verifique se existe o tópico ou ID")
 
+    def delete(self):
+        pass
 
 if __name__ == "__main__": 
     app = Janela_Bibliotecario()
