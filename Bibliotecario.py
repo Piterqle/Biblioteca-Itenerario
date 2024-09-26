@@ -44,13 +44,22 @@ def delete(tree,tabela, coluna, indicie):
     item_selecionado = tree.selection()
     if item_selecionado:
         valor = tree.item(item_selecionado, "values")[indicie]
-        comando = f"DELETE FROM {tabela} WHERE {coluna} = '%s'"
+        comando = f"DELETE FROM {tabela} WHERE {coluna} = (%s)"
         cursor.execute(comando, (valor, ))
-     
+        
+        conexao.commit()
+        tree.delete(item_selecionado)
+        messagebox.showinfo("Deletado", "Item deletado")
+
+
+
+
+
 
 class Janela_Bibliotecario(tk.Tk):
     def __init__(self, *args):
         super().__init__()
+        self.column = ["ID", "Livro", "Gênero", "Autor", "Idioma", "Localização","Status"]
         self.main_screen()
 
 
@@ -59,13 +68,13 @@ class Janela_Bibliotecario(tk.Tk):
         self.title("Área do Gerente")
         for widget in self.winfo_children():
             widget.destroy()
-
+        
         #Frames aléatorios 
         frame_dash = tk.Frame(self, width=227 , height=1080, bg="Black") #Frame Dashboard
         frame_dash.pack(anchor="w",side="left")
         frame_dash.propagate(False)
 
-        self.buttom_delete = tk.Button(frame_dash, text="Deletar", command=lambda:delete(self.tree_menu, "dim_biblioteca", "id_livro", 1),bg="White", width=20, font=("Arial", 10))
+        self.buttom_delete = tk.Button(frame_dash, text="Deletar", command=lambda:delete(self.tree_menu, "dim_biblioteca", "id_livro", 0),bg="White", width=20, font=("Arial", 10))
         self.buttom_delete.pack(anchor="center", pady=10)
         
         frame_pesquisa = tk.Frame(frame_dash, bg="Black")
@@ -73,13 +82,8 @@ class Janela_Bibliotecario(tk.Tk):
 
         tk.Label(frame_dash, text="Controle da Biblioteca", bg="Black", fg="white",font=("Arial", 15, "bold")).pack(padx=10)
         
-        #Botão de Pesquisa no Estoque
-        bt_pesquisa = tk.Button(frame_pesquisa, text="🔎", width=3)
-        bt_pesquisa.grid(column=1, row=0)
 
-        #Entry de pesquisa
-        self.txb_pesquisa = tk.Entry(frame_pesquisa, width=25, bd=4)
-        self.txb_pesquisa.grid(column=0, row=0)
+        
 
         #Frame dos Buttons
         frame_buttons = tk.Frame(frame_dash, bg="Black")
@@ -111,13 +115,30 @@ class Janela_Bibliotecario(tk.Tk):
         tree_frame.pack(fill="both", expand=True)
         estilo = ttk.Style()
         estilo.configure("Treeview", font=("Arial", 10))
-        self.column = ["ID", "Livro", "Gênero", "Autor", "Idioma", "Localização","Status"]
+        
         self.tree_menu = ttk.Treeview(tree_frame, columns= self.column, show="headings",)
         self.tree_menu.pack(expand=True, fill="both", side="left")
+
+        self.combo_pesquisa = ttk.Combobox(frame_pesquisa, values=self.column, width=30)
+        self.combo_pesquisa.grid(column=0, row=0, columnspan=3, pady=10)
+        self.combo_pesquisa.set("Filtros:")
+
+        #Entry de pesquisa
+        self.txb_pesquisa = tk.Entry(frame_pesquisa, width=25, bd=4)
+        self.txb_pesquisa.grid(column=0, row=1)
+        self.txb_pesquisa.insert(0, "Pesquisar:")
+
+        #Botão de Pesquisa no Estoque
+        bt_pesquisa = tk.Button(frame_pesquisa, text="🔎", width=3, command=self.pesquisa)
+        bt_pesquisa.grid(column=1, row=1)
 
         for col in self.column:
             self.tree_menu.heading(column=col, text=col)
             self.tree_menu.column(col, width=50)
+        
+        self.scroll = ttk.Scrollbar(tree_frame, orient="vertical", command=self.tree_menu.yview)
+        self.scroll.pack(side="right")
+        self.tree_menu.configure(yscrollcommand=self.scroll.set)
         
         self.tree_menu.tag_configure("dis", background="#00FF00")
         self.tree_menu.tag_configure("indis", background="#FF2400")
@@ -164,6 +185,12 @@ class Janela_Bibliotecario(tk.Tk):
         self.destroy
         root = tk.Tk()
         root.geometry("500x600")
+        
+        frame_color = tk.Frame(root, width=1920, height=120, bg="Black")
+        frame_color.pack(anchor="w")
+        frame_color.propagate(False)
+
+        tk.Label(frame_color, text="Menu de edição de Livro", font=("Arial", 26, "bold"), fg="White", bg="Black").pack(anchor="center", pady=35)
 
         frame_edL = tk.Frame(root, width=200, height=100 )
         frame_edL.pack( anchor="center", pady=10)
@@ -177,8 +204,8 @@ class Janela_Bibliotecario(tk.Tk):
         self.combo_idL.pack(pady=10, anchor="w")
 
         tk.Label(frame_edL, text="Editar Atributo:", font=("Arial", 12)).pack( anchor="w")
-        lista_edi = ["Nome", "Gênero", "Autor", "Idioma", "Localização", "Status"]
-        self.combo_topicoL = ttk.Combobox(frame_edL, width=50, values=lista_edi)
+        self.lista_edi = ["Nome", "Gênero", "Autor", "Idioma", "Localização", "Status"]
+        self.combo_topicoL = ttk.Combobox(frame_edL, width=50, values=self.lista_edi)
         self.combo_topicoL.pack(pady=10, anchor="w")
 
         tk.Label(frame_edL, text="Novo Valor:", font=("Arial", 12)).pack( anchor="w")
@@ -192,10 +219,10 @@ class Janela_Bibliotecario(tk.Tk):
         bt_cancelar.pack(side="bottom")
         
     def adicionar_livro(self, root):
-        titulo = self.entry_nomeL.get()
-        genero = self.entry_generoL.get()
-        autor = self.entry_autorL.get()
-        idioma = self.entry_IdiomaL.get()
+        titulo = self.entry_nomeL.get().capitalize()
+        genero = self.entry_generoL.get().capitalize() 
+        autor = self.entry_autorL.get().capitalize()
+        idioma = self.entry_IdiomaL.get().capitalize()
         status = self.entry_StatusL.get()
 
         genero_fi = add_sql(genero,"id_generolivro", "fato_generolivro", "generolivro")
@@ -217,10 +244,10 @@ class Janela_Bibliotecario(tk.Tk):
     def iniciar_tabela(self, comando):
         comando
         for i in cursor.fetchall():
-            genero = add_sql(i[3], "generolivro", "fato_generolivro", "id_generolivro")
-            autor = add_sql(i[2], "autor", "fato_autor", "id_autor")
-            idioma = add_sql(i[4], "idioma", "fato_idioma", "id_idioma")
-            status = add_sql(i[6], "status", "fato_status", "id_status")
+            genero = select(i[3], "generolivro", "fato_generolivro", "id_generolivro")
+            autor = select(i[2], "autor", "fato_autor", "id_autor")
+            idioma = select(i[4], "idioma", "fato_idioma", "id_idioma")
+            status = select(i[6], "status", "fato_status", "id_status")
             if status == "Disponível":
                 self.tree_menu.insert("", "end", values=(i[0], i[1], genero, autor, idioma, i[5], status), tags=("all", "dis",))
             else:
@@ -240,22 +267,62 @@ class Janela_Bibliotecario(tk.Tk):
             tabela = "fato_generolivro"
             valor = (valor_edit, selecionar, tabela, coluna)
         elif topico == "Autor":
-            
             coluna = "autor"
             selecionar = 'id_autor'
             tabela = "fato_autor" 
             valor = add_sql(valor_edit, selecionar, tabela, coluna)
+        elif topico == "Idioma":
+            coluna = "idioma"
+            selecionar = "id_idioma"
+            tabela = "fato_idioma"
+            valor = add_sql(valor_edit, selecionar, tabela, coluna)
+        elif topico == "Localização":
+            coluna = "carro"
+            selecionar = "id_carro"
+            tabela = "fato_localização"
+            valor = add_sql(valor_edit, selecionar, tabela, coluna )
         
-        # try:
-        comando = (f"UPDATE dim_biblioteca SET {topico} = '{valor}' WHERE id_livro = (%s)")
-        cursor.execute(comando, (id_edit, ))
-        conexao.commit()
-        self.off_windowns(root)
-        # except:
-        #     messagebox.showerror("ERRO", "Verifique se existe o tópico ou ID")
+        try:
+            comando = (f"UPDATE dim_biblioteca SET {topico} = '{valor}' WHERE id_livro = (%s)")
+            cursor.execute(comando, (id_edit, ))
+            conexao.commit()
+            self.off_windowns(root)
+        except:
+            messagebox.showerror("ERRO", "Verifique se existe o tópico ou ID")
+        
+    def pesquisa(self):
+        valor = f"{self.txb_pesquisa.get()}%"
+        coluna = self.combo_pesquisa.get()
+        valor = valor.replace("Pesquisar: " , "")
+        if coluna == None:
+            messagebox.showerror("ERRO", "Coloque um Filtro de Pesquisa")
+        else:
+            if coluna in self.column:
+                if coluna == "ID":
+                    coluna = "id_livro"
+                    comando = f"SELECT * FROM dim_biblioteca WHERE {coluna} LIKE %s;"
+                elif coluna == "Livro":
+                    coluna = "Título"
+                    comando = f"SELECT * FROM dim_biblioteca WHERE {coluna} LIKE %s;"
+                elif coluna == "Gênero":
+                    comando = "SELECT * FROM dim_biblioteca JOIN fato_generolivro ON Gênero = fato_generolivro.id_generolivro WHERE fato_generolivro.generolivro LIKE %s;"
+                elif coluna == "Autor":
+                    comando = "SELECT * FROM dim_biblioteca JOIN fato_autor ON Autor = fato_autor.id_autor WHERE fato_autor.autor LIKE %s"
+                elif coluna == "Idioma":
+                    comando = "SELECT * FROM dim_biblioteca JOIN fato_idioma ON Idioma = fato_autor.id_idioma WHERE fato_idioma.idioma LIKE %s"
+                elif coluna == "Localização":
+                    comando = "SELECT * FROM dim_biblioteca JOIN fato_localização ON Localização = fato_localização.id_carro WHERE fato_localização.carro LIKE %s"
+                elif coluna == "Status":
+                    comando = "SELECT * FROM dim_biblioteca JOIN fato_status ON Status = fato_status.id_status WHERE fato_status.status LIKE %s"
+                
+                for item in self.tree_menu.get_children():
+                    self.tree_menu.delete(item)
+                
+                self.iniciar_tabela(cursor.execute(comando, (valor,)))
+            else:
+                messagebox.showerror("ERRO", "Coloque um Filtro que esteja nas opções")
+        
 
-    def delete(self):
-        pass
 
 if __name__ == "__main__": 
     app = Janela_Bibliotecario()
