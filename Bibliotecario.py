@@ -46,10 +46,13 @@ def delete(tree,tabela, coluna, indicie):
         valor = tree.item(item_selecionado, "values")[indicie]
         comando = f"DELETE FROM {tabela} WHERE {coluna} = (%s)"
         cursor.execute(comando, (valor, ))
+        cursor.execute(f"ALTER TABLE {tabela} AUTO_INCREMENT = 0")
         
         conexao.commit()
         tree.delete(item_selecionado)
         messagebox.showinfo("Deletado", "Item deletado")
+    else:
+        messagebox.showerror("ERRO", "Selecione um item para que seja deletado")
 
 
 
@@ -65,7 +68,7 @@ class Janela_Bibliotecario(tk.Tk):
 
     def main_screen(self):
         self.geometry("950x600")
-        self.title("Área do Gerente")
+        self.title("Área do Administrador")
         for widget in self.winfo_children():
             widget.destroy()
         
@@ -137,7 +140,7 @@ class Janela_Bibliotecario(tk.Tk):
             self.tree_menu.column(col, width=50)
         
         self.scroll = ttk.Scrollbar(tree_frame, orient="vertical", command=self.tree_menu.yview)
-        self.scroll.pack(side="right")
+        self.scroll.pack(side="right", fill="both")
         self.tree_menu.configure(yscrollcommand=self.scroll.set)
         
         self.tree_menu.tag_configure("dis", background="#00FF00")
@@ -184,7 +187,7 @@ class Janela_Bibliotecario(tk.Tk):
     def screen_edição(self):
         self.destroy
         root = tk.Tk()
-        root.geometry("500x600")
+        root.geometry("450x420")
         
         frame_color = tk.Frame(root, width=1920, height=120, bg="Black")
         frame_color.pack(anchor="w")
