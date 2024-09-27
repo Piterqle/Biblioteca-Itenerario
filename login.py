@@ -92,12 +92,19 @@ class Login(tk.Tk):
             resultado = cursor.fetchone()
             if resultado:
                 if resultado[0] == 0:
-                    ClienteApp.mainloop()
+                    self.destroy()
+                    app = ClienteApp()
+                    app.mainloop()
+                    
+
                 elif resultado[0] == 1:
-                    bibliotecario.mainloop()
-            
+                    self.destroy()
+                    app = bibliotecario()
+                    app.mainloop()
+                    
+
             else:
-                messagebox.showerror("ERRO", "Usário Inexistente")
+                messagebox.showerror("ERRO", "Usuário ou senha inexistente")
 
     def screen_cadastrar(self, event=None):
         for widget in self.winfo_children():
