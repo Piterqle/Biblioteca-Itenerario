@@ -46,8 +46,6 @@ def delete(tree,tabela, coluna, indicie):
         valor = tree.item(item_selecionado, "values")[indicie]
         comando = f"DELETE FROM {tabela} WHERE {coluna} = (%s)"
         cursor.execute(comando, (valor, ))
-        cursor.execute(f"ALTER TABLE {tabela} AUTO_INCREMENT = 0")
-        
         conexao.commit()
         tree.delete(item_selecionado)
         messagebox.showinfo("Deletado", "Item deletado")

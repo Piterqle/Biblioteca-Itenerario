@@ -27,6 +27,9 @@ def Infocus_entry(entry, text):
         entry.insert(0, text)
         entry.config(fg="gray")
 
+def show(entry):
+    entry.config(show="*")
+
 
 class Login(tk.Tk):
     def __init__(self, *args):
@@ -60,7 +63,7 @@ class Login(tk.Tk):
         self.txb_senha = tk.Entry(frame_login, width=66, fg="Gray")
         self.txb_senha.pack(anchor="w")
         self.txb_senha.insert(0, self.txt_senha )
-        self.txb_senha.bind("<FocusIn>", lambda envet:focus_entry(self.txb_senha, self.txt_senha) )
+        self.txb_senha.bind("<FocusIn>", lambda envet:[focus_entry(self.txb_senha, self.txt_senha), show(self.txb_senha)])
         self.txb_senha.bind("<FocusOut>", lambda event: Infocus_entry(self.txb_senha, self.txt_senha))
         
 
